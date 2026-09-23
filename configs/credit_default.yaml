@@ -1,0 +1,24 @@
+# UCI "default of credit card clients". NOT YET RUN - verify on first use.
+# Download the .xls from the UCI repository page of that name, then:
+#   python scripts/prepare_data.py credit_default --src path/to/file.xls
+name: credit_default
+
+data:
+  kind: tabular
+  path: data/credit_default.csv
+  label_col: default
+  positive_labels: ["1"]
+  test_frac: 0.2
+  split_seed: 0
+  categorical: [SEX, EDUCATION, MARRIAGE]
+  log1p: []
+  active_party: payments
+  parties:
+    payments:     [PAY_0, PAY_2, PAY_3, PAY_4, PAY_5, PAY_6,
+                   PAY_AMT1, PAY_AMT2, PAY_AMT3, PAY_AMT4, PAY_AMT5, PAY_AMT6]
+    demographics: [LIMIT_BAL, SEX, EDUCATION, MARRIAGE, AGE]
+    billing:      [BILL_AMT1, BILL_AMT2, BILL_AMT3, BILL_AMT4, BILL_AMT5, BILL_AMT6]
+
+model: {emb_dim: 16, bottom_hidden: [64], top_hidden: [128], null_token: mean}
+train: {epochs: 20, batch_size: 256, lr: 0.001, weight_decay: 0.0, block_dropout: 0.0}
+unlearning: {delete_party: demographics, n_delete: 500, n_control: 500, n_neighbors: 5}

@@ -1,0 +1,39 @@
+# Synthetic VFL data. Fast (about a minute end to end on a laptop CPU).
+# Use it to debug, and to sweep cross_party_corr - how much the parties overlap.
+name: synthetic
+
+data:
+  kind: synthetic
+  n: 8000                    # records
+  n_parties: 3
+  features_per_party: 10
+  latent_dim: 6
+  cross_party_corr: 0.3      # 0 = parties independent, 1 = parties see the same signal
+  label_noise: 0.15          # flipped labels give the model something individual to memorise
+  signal_scale: 2.0
+  active_party: 0
+  test_frac: 0.2
+  data_seed: 0               # fixes the generated data across experiment seeds
+
+model:
+  emb_dim: 16
+  bottom_hidden: [128]
+  top_hidden: [128]
+  null_token: mean           # mean | zero | learned
+
+train:
+  epochs: 120
+  batch_size: 128
+  lr: 0.001
+  weight_decay: 0.0
+  block_dropout: 0.0         # > 0 = "erasure-ready" training (random block masking)
+
+unlearning:
+  delete_party: p1           # party that receives the erasure requests (name or index)
+  n_delete: 400              # blocks to erase
+  n_control: 400             # blocks masked from the start (the "never seen" reference)
+  n_neighbors: 5             # neighbours per deleted block, for locality
+
+methods:                     # optional per-method overrides; defaults live in bvu/unlearn.py
+  blockedit: {steps: 300, lr: 0.001, lam: 1.0}
+  row_ga: {epochs: 3, lr: 0.0005}

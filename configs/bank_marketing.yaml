@@ -1,0 +1,24 @@
+# UCI Bank Marketing (bank-additional-full.csv). NOT YET RUN - verify on first use.
+#   python scripts/prepare_data.py bank_marketing --src path/to/bank-additional-full.csv
+name: bank_marketing
+
+data:
+  kind: tabular
+  path: data/bank_marketing.csv
+  label_col: y
+  positive_labels: ["yes"]
+  test_frac: 0.2
+  split_seed: 0
+  categorical: [job, marital, education, default, housing, loan, contact, month,
+                day_of_week, poutcome]
+  log1p: [campaign, previous]
+  active_party: bank
+  parties:
+    bank:     [default, housing, loan, campaign, pdays, previous, poutcome]
+    client:   [age, job, marital, education]
+    campaign: [contact, month, day_of_week, emp.var.rate, cons.price.idx,
+               cons.conf.idx, euribor3m, nr.employed]
+
+model: {emb_dim: 16, bottom_hidden: [64], top_hidden: [128], null_token: mean}
+train: {epochs: 20, batch_size: 256, lr: 0.001, weight_decay: 0.0, block_dropout: 0.0}
+unlearning: {delete_party: client, n_delete: 500, n_control: 500, n_neighbors: 5}

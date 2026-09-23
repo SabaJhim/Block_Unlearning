@@ -1,0 +1,43 @@
+# UCI Adult split across three parties. Run `python scripts/prepare_data.py adult` first.
+# The demographic party plays the role of the "hospital": it receives the erasure requests.
+name: adult
+
+data:
+  kind: tabular
+  path: data/adult.csv
+  label_col: income
+  positive_labels: [">50K"]
+  test_frac: 0.2
+  split_seed: 0
+  subsample_train: null      # e.g. 8000 to make memorisation (and so erasure) easier to measure
+  categorical: [workclass, occupation, sex, race, native-country, marital-status,
+                relationship, education]
+  log1p: [capital-gain, capital-loss, fnlwgt]
+  active_party: employment
+  parties:                   # order matters: this is party 0, 1, 2
+    employment:  [workclass, occupation, hours-per-week, capital-gain, capital-loss]
+    demographic: [age, sex, race, native-country, marital-status, relationship]
+    education:   [education, education-num, fnlwgt]
+
+model:
+  emb_dim: 16
+  bottom_hidden: [64]
+  top_hidden: [128]
+  null_token: mean
+
+train:
+  epochs: 20
+  batch_size: 256
+  lr: 0.001
+  weight_decay: 0.0
+  block_dropout: 0.0
+
+unlearning:
+  delete_party: demographic
+  n_delete: 500
+  n_control: 500
+  n_neighbors: 5
+
+methods:
+  blockedit: {steps: 300, lr: 0.001, lam: 1.0}
+  row_ga: {epochs: 3, lr: 0.0005}
